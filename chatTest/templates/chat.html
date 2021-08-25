@@ -1,0 +1,80 @@
+<html>
+  <head>
+    <title>Chat</title>
+    <style>
+
+      input { display: block; }
+      ul    { list-style: none; }
+
+    </style>
+  </head>
+  <body>
+<div>
+    <ul id="messages"></ul>
+    <form id="chatbox">
+      {{.UserData.name}}:<br/>
+      {{.UserData.email}}:<br/>
+      <textarea></textarea>
+      <input type="submit" value="Send" />
+    </form>
+</div>
+
+<div>
+    <ul id="roomList"></ul>
+    <form id="createRoom">
+      <input id="roomName" type="text" placeholder="방 이름 입력">
+      <input type="submit" value="방 생성">
+    </form>
+</div>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+      $(function(){
+
+        var socket = null;
+        var msgBox = $("#chatbox textarea");
+        var messages = $("#messages");
+        var roomName = $("#roomName")
+
+        $("#chatbox").submit(function(){
+
+          if (!msgBox.val()) return false;
+          if (!socket) {
+            alert("Error: There is no socket connection.");
+            return false;
+          }
+
+          socket.send(JSON.stringify({"Message": msgBox.val()}));
+          msgBox.val("");
+          return false;
+
+        });
+
+
+        if (!window["WebSocket"]) {
+          alert("Error: Your browser does not support web sockets.")
+        } else {
+          socket = new WebSocket("ws://{{.Host}}/room");
+          socket.onclose = function() {
+            alert("Connection has been closed.");
+          }
+
+          socket.onmessage = function(e) {
+            var msg = JSON.parse(e.data);
+
+            messages.append(
+                    $("<li>").append(
+                            $("<strong>").text(msg.Name + ": "),
+                            $("<strong>").text(msg.Email + ": "),
+                            $("<span>").text(msg.Message)
+                    )
+            );
+          }
+
+        }
+
+      });
+
+    </script>
+  </body>
+</html>
