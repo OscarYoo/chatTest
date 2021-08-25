@@ -24,27 +24,17 @@ func main()  {
 	r.GET("/login", func(c *gin.Context){
 		c.HTML(http.StatusOK,"login.html",nil) //로그인 처리
 	})
-	r.POST("/api/channel", wrapper(c1.CreateChannel))//채널 생성
-	r.GET("/api/channel", wrapper(c1.GetAllChannelList))//모든 채널 목록 조회 및 채널 생성 폼
-	r.GET("/api/channel/:user_id", wrapper(c1.GetMyChannelList))//내가 참여한 채널 목록 조회
-	r.POST("/api/channel/:chan_no",wrapper(c1.GetChannel))//채널 입장
-	r.POST("/api/channel/:chan_no/msg",wrapper(c2.CreateMessage))//메시지 전송
-	r.PUT("/api/channel/:chan_no/msg/:msg_no",wrapper(c2.UpdateMessage))//메시지 수정
-	r.DELETE("/api/channel/:chan_no/msg/:msg_no",wrapper(c2.DeleteMessage))//메시지 삭제
+	r.POST("/api/channel", c1.CreateChannel)//채널 생성
+	r.GET("/api/channel", c1.GetAllChannelList)//모든 채널 목록 조회 및 채널 생성 폼
+	r.GET("/api/channel/:user_id", c1.GetMyChannelList)//내가 참여한 채널 목록 조회
+	r.GET("/api/channel/:user_id/:chan_no",c1.GetChannel)//채널 입장
+	r.GET("/api/channel/:user_id/:chan_no/msg",c2.GetMessageList)//채널 입장 후 메시지 리스트 조회
+	r.POST("/api/channel/:user_id/:chan_no/msg",c2.CreateMessage)//메시지 전송
+	r.PUT("/api/channel/:user_id/:chan_no/msg/:msg_no",c2.UpdateMessage)//메시지 수정
+	r.DELETE("/api/channel/:user_id/:chan_no/msg/:msg_no",c2.DeleteMessage)//메시지 삭제
 
 	log.Printf("Listening on port %s", port)
 	r.Run(":" + port)
 }
 
 
-func wrapper(f func(c *gin.Context) (string, error)) gin.HandlerFunc {
-
-	return func(c *gin.Context) {
-		_, err := f(c)
-		if err != nil {
-			c.JSON(503, gin.H{"status": err})
-			return
-		}
-		c.JSON(200, gin.H{"status": "OK"})
-	}
-}
